@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
     /* ─── Language & Environment ─────────────────────────────────── */
     "target": "ES2022",
     "lib": [
@@ -31,40 +30,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    /* ─── Paths ───────────────────────────────────────────────────── */
-    "baseUrl": "./src",
-    "paths": {
-      "@config/*": [
-        "config/*"
-      ],
-      "@controllers/*": [
-        "controllers/*"
-      ],
-      "@interfaces/*": [
-        "interfaces/*"
-      ],
-      "@middlewares/*": [
-        "middlewares/*"
-      ],
-      "@models/*": [
-        "models/*"
-      ],
-      "@repositories/*": [
-        "repositories/*"
-      ],
-      "@routes/*": [
-        "routes/*"
-      ],
-      "@services/*": [
-        "services/*"
-      ],
-      "@types/*": [
-        "types/*"
-      ],
-      "@validators/*": [
-        "validators/*"
-      ]
-    },
+
     /* ─── Decorators ─────────────────────────────────────────────── */
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
