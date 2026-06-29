@@ -1,0 +1,168 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// MediRDV — Schéma Prisma
+// Modèles : Centre, Specialite, Medecin, Absence, RendezVous, Utilisateur
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Centre Médical ───────────────────────────────────────────────────────────
+/// Représente un établissement de santé (clinique, hôpital, cabinet)
+model Centre {
+  id         Int          @id @default(autoincrement())
+  nom        String       @db.VarChar(150)
+  adresse    String       @db.VarChar(255)
+  contact    String       @db.VarChar(50)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  /// Médecins rattachés à ce centre
+  medecins   Medecin[]
+
+  /// Rendez-vous pris dans ce centre
+  rendezvous RendezVous[]
+
+  @@map("centres")
+}
+
+// ─── Spécialité Médicale ──────────────────────────────────────────────────────
+/// Spécialité exercée par les médecins (cardiologie, pédiatrie, etc.)
+model Specialite {
+  id          Int       @id @default(autoincrement())
+  nom         String    @unique @db.VarChar(100)
+  description String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  /// Médecins pratiquant cette spécialité
+  medecins    Medecin[]
+
+  @@map("specialites")
+}
+
+// ─── Médecin ──────────────────────────────────────────────────────────────────
+/// Professionnel de santé rattaché à un centre et une spécialité
+model Medecin {
+  id           Int          @id @default(autoincrement())
+  nom          String       @db.VarChar(100)
+  prenom       String       @db.VarChar(100)
+  email        String       @unique @db.VarChar(150)
+  telephone    String?      @db.VarChar(20)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  /// Centre d'exercice du médecin
+  centreId     Int          @map("centre_id")
+  centre       Centre       @relation(fields: [centreId], references: [id], onDelete: Restrict)
+
+  /// Spécialité exercée
+  specialiteId Int          @map("specialite_id")
+  specialite   Specialite   @relation(fields: [specialiteId], references: [id], onDelete: Restrict)
+
+  /// Absences déclarées
+  absences     Absence[]
+
+  /// Rendez-vous confirmés ou annulés
+  rendezvous   RendezVous[]
+
+  @@map("medecins")
+}
+
+// ─── Absence ──────────────────────────────────────────────────────────────────
+/// Période d'indisponibilité d'un médecin (maladie, congés, formation)
+model Absence {
+  id         Int          @id @default(autoincrement())
+  dateDebut  DateTime     @map("date_debut") @db.Timestamptz
+  dateFin    DateTime     @map("date_fin") @db.Timestamptz
+  motif      MotifAbsence @default(autre)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  /// Médecin concerné par l'absence
+  medecinId  Int          @map("medecin_id")
+  medecin    Medecin      @relation(fields: [medecinId], references: [id], onDelete: Cascade)
+
+  @@map("absences")
+}
+
+// ─── Rendez-vous ──────────────────────────────────────────────────────────────
+/// Réservation d'un créneau horaire avec un médecin
+model RendezVous {
+  id           Int            @id @default(autoincrement())
+  patientNom   String         @map("patient_nom") @db.VarChar(150)
+  patientEmail String         @map("patient_email") @db.VarChar(150)
+  dateHeure    DateTime       @map("date_heure") @db.Timestamptz
+  statut       StatutRdv      @default(confirme)
+  motifConsult String?        @map("motif_consult") @db.Text
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  /// Médecin consulté
+  medecinId    Int            @map("medecin_id")
+  medecin      Medecin        @relation(fields: [medecinId], references: [id], onDelete: Restrict)
+
+  /// Centre de la consultation
+  centreId     Int            @map("centre_id")
+  centre       Centre         @relation(fields: [centreId], references: [id], onDelete: Restrict)
+
+  /// Patient authentifié (optionnel — booking peut être anonyme)
+  utilisateurId Int?          @map("utilisateur_id")
+  utilisateur   Utilisateur?  @relation(fields: [utilisateurId], references: [id], onDelete: SetNull)
+
+  /// Un médecin ne peut pas avoir deux RDV confirmés au même créneau
+  @@unique([medecinId, dateHeure, statut])
+  @@map("rendezvous")
+}
+
+// ─── Utilisateur ──────────────────────────────────────────────────────────────
+/// Compte utilisateur (admin ou patient authentifié)
+model Utilisateur {
+  id           Int          @id @default(autoincrement())
+  email        String       @unique @db.VarChar(150)
+  passwordHash String       @map("password_hash") @db.VarChar(255)
+  nom          String?      @db.VarChar(100)
+  prenom       String?      @db.VarChar(100)
+  role         RoleUser     @default(patient)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  /// Rendez-vous liés à cet utilisateur
+  rendezvous   RendezVous[]
+
+  @@map("utilisateurs")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+/// Motif d'absence d'un médecin
+enum MotifAbsence {
+  maladie
+  conges
+  formation
+  autre
+
+  @@map("motif_absence")
+}
+
+/// Statut d'un rendez-vous
+enum StatutRdv {
+  confirme
+  annule
+  termine
+
+  @@map("statut_rdv")
+}
+
+/// Rôle d'un utilisateur dans le système
+enum RoleUser {
+  admin
+  patient
+
+  @@map("role_user")
+}
