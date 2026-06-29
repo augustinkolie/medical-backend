@@ -40,7 +40,7 @@ export function createApp(): Application {
    */
   app.use(
     cors({
-      origin: env.ALLOWED_ORIGIN.split(',').map((o) => o.trim()),
+      origin: env.ALLOWED_ORIGIN.split(',').map((o) => o.trim().replace(/\/$/, '')),
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
