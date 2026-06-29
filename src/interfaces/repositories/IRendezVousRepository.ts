@@ -83,4 +83,10 @@ export interface IRendezVousRepository {
    * @returns Le rendez-vous mis à jour
    */
   cancel(id: number): Promise<RendezVous>;
+  /**
+   * Confirme un rendez-vous (passe le statut à 'confirme').
+   * @param id - Identifiant du RDV à confirmer
+   * @returns Le rendez-vous mis à jour
+   */
+  confirm(id: number): Promise<RendezVous>;
 }

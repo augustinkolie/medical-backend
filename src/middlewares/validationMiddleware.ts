@@ -38,8 +38,8 @@ type ValidationTarget = 'body' | 'params' | 'query';
  *   centreController.getById
  * );
  */
-export function validate<T>(
-  schema: ZodSchema<T>,
+export function validate(
+  schema: ZodSchema<any, any, any>,
   target: ValidationTarget = 'body'
 ) {
   return (req: Request, _res: Response, next: NextFunction): void => {

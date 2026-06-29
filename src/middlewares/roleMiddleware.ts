@@ -28,8 +28,8 @@ import { ErrorCode, AuthenticatedRequest } from '../types';
  * router.get('/rendezvous', authMiddleware, requireRole(RoleUser.admin, RoleUser.patient), controller.getAll);
  */
 export function requireRole(...allowedRoles: RoleUser[]) {
-  return (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
-    const userRole = req.user?.role;
+  return (req: import('express').Request, _res: Response, next: NextFunction): void => {
+    const userRole = (req as AuthenticatedRequest).user?.role;
 
     if (!userRole || !allowedRoles.includes(userRole)) {
       throw new AppError(

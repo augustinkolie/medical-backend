@@ -7,7 +7,7 @@
 
 import { Router } from 'express';
 import { MedecinController } from '../controllers/MedecinController';
-import { RendezVousController } from '../controllers/RendezVousController';
+
 import { MedecinRepository } from '../repositories/MedecinRepository';
 import { SpecialiteRepository } from '../repositories/SpecialiteRepository';
 import { AbsenceRepository } from '../repositories/AbsenceRepository';

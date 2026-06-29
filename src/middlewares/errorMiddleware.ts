@@ -23,7 +23,7 @@ import { ErrorCode, ApiErrorResponse } from '../types';
 export class AppError extends Error {
   constructor(
     /** Message lisible par l'humain */
-    public readonly message: string,
+    public override readonly message: string,
     /** Code de statut HTTP */
     public readonly statusCode: number = 500,
     /** Code d'erreur métier pour le client */

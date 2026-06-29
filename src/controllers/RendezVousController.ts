@@ -19,7 +19,7 @@ export class RendezVousController {
    * GET /api/rendezvous [Admin]
    * Liste tous les rendez-vous avec filtres optionnels.
    */
-  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const rdvs = await this.rendezVousService.getAllRendezVous();
       res.json({ success: true, data: rdvs, meta: { total: rdvs.length } });

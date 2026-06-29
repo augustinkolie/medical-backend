@@ -11,7 +11,7 @@ const router = Router();
 const specialiteRepository = new SpecialiteRepository(prisma);
 
 /** GET /api/specialites */
-router.get('/', async (req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
     const specialites = await specialiteRepository.findAll();
     res.json({ success: true, data: specialites });
