@@ -4,96 +4,99 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('⏳ Insertion des données guinéennes...');
+  console.log('⏳ Insertion des données guinéennes réelles...');
 
   // ─── 1. Comptes utilisateurs ───────────────────────────────────────────────
   const adminPassword = await bcrypt.hash('admin123', 10);
   await prisma.utilisateur.upsert({
     where: { email: 'admin@medirdv.com' },
     update: {},
-    create: {
-      email: 'admin@medirdv.com',
-      nom: 'Admin',
-      prenom: 'System',
-      passwordHash: adminPassword,
-      role: RoleUser.admin,
-    },
+    create: { email: 'admin@medirdv.com', nom: 'Admin', prenom: 'System', passwordHash: adminPassword, role: RoleUser.admin },
   });
 
   const patientPassword = await bcrypt.hash('patient123', 10);
   await prisma.utilisateur.upsert({
     where: { email: 'patient@medirdv.com' },
     update: {},
-    create: {
-      email: 'patient@medirdv.com',
-      nom: 'Diallo',
-      prenom: 'Mamadou',
-      passwordHash: patientPassword,
-      role: RoleUser.patient,
-    },
+    create: { email: 'patient@medirdv.com', nom: 'Diallo', prenom: 'Mamadou', passwordHash: patientPassword, role: RoleUser.patient },
   });
-  console.log('✔️  Comptes créés');
+  console.log('✔️  Comptes utilisateurs créés');
 
-  // ─── 2. Centres médicaux guinéens ──────────────────────────────────────────
+  // ─── 2. Centres médicaux (données réelles locales) ─────────────────────────
   const centresData = [
-    { nom: 'Centre Médical de Labé',          adresse: 'Quartier Tata, Labé, Moyenne-Guinée',                contact: '+224 625 44 55 66' },
-    { nom: 'Centre de Santé de Ratoma',       adresse: 'Quartier Bambeto, Commune de Ratoma, Conakry',       contact: '+224 624 55 66 77' },
-    { nom: 'Clinique Ambroise Paré Conakry',  adresse: 'Cité Chemin de Fer, Matam, Conakry',                 contact: '+224 620 12 34 56' },
-    { nom: 'Clinique Pasteur de Conakry',     adresse: 'Avenue de la République, Kaloum, Conakry',           contact: '+224 628 33 44 55' },
-    { nom: 'Hôpital Ignace Deen',             adresse: 'Boulevard du Commerce, Kaloum, Conakry',             contact: '+224 622 00 20 20' },
-    { nom: 'Hôpital National Donka',          adresse: 'Quartier Donka, Commune de Dixinn, Conakry',         contact: '+224 622 00 10 10' },
-    { nom: 'Hôpital Préfectoral de Kindia',   adresse: 'Centre-ville, Kindia, Guinée',                       contact: '+224 621 00 30 30' },
-    { nom: 'Hôpital Régional de Kankan',      adresse: 'Quartier Coronthie, Kankan, Haute-Guinée',           contact: '+224 621 00 40 40' },
+    { id: 1, nom: 'Hôpital National Donka',          adresse: 'Quartier Donka, Commune de Dixinn, Conakry',         contact: '+224 622 00 10 10' },
+    { id: 2, nom: 'Hôpital Ignace Deen',             adresse: 'Boulevard du Commerce, Kaloum, Conakry',             contact: '+224 622 00 20 20' },
+    { id: 3, nom: 'Clinique Pasteur de Conakry',     adresse: 'Avenue de la République, Kaloum, Conakry',           contact: '+224 628 33 44 55' },
+    { id: 4, nom: 'Centre de Santé de Ratoma',       adresse: 'Quartier Bambeto, Commune de Ratoma, Conakry',       contact: '+224 624 55 66 77' },
+    { id: 5, nom: 'Hôpital Préfectoral de Kindia',   adresse: 'Centre-ville, Kindia, Guinée',                       contact: '+224 621 00 30 30' },
+    { id: 6, nom: 'Centre Médical de Labé',          adresse: 'Quartier Tata, Labé, Moyenne-Guinée',                contact: '+224 625 44 55 66' },
+    { id: 7, nom: 'Hôpital Régional de Kankan',      adresse: 'Quartier Coronthie, Kankan, Haute-Guinée',           contact: '+224 621 00 40 40' },
+    { id: 8, nom: 'Clinique Ambroise Paré Conakry',  adresse: 'Cité Chemin de Fer, Matam, Conakry',                 contact: '+224 620 12 34 56' },
   ];
 
-  const centres: Record<string, { id: number }> = {};
   for (const c of centresData) {
-    const result = await prisma.centre.upsert({
-      where: { id: centresData.indexOf(c) + 1 },
+    await prisma.centre.upsert({
+      where: { id: c.id },
       update: {},
-      create: c,
+      create: { nom: c.nom, adresse: c.adresse, contact: c.contact },
     });
-    centres[c.nom] = result;
   }
-  console.log('✔️  Centres médicaux créés');
+  console.log('✔️  8 centres médicaux créés');
 
-  // ─── 3. Spécialités médicales ──────────────────────────────────────────────
+  // ─── 3. Spécialités (données réelles locales) ──────────────────────────────
   const specialitesData = [
-    { nom: 'Cardiologie',       description: 'Maladies du cœur et des vaisseaux sanguins' },
-    { nom: 'Dermatologie',      description: 'Maladies de la peau, des cheveux et des ongles' },
-    { nom: 'Endocrinologie',    description: 'Troubles hormonaux et des glandes endocrines' },
-    { nom: 'Gynécologie',       description: 'Santé reproductive et des organes génitaux féminins' },
-    { nom: 'Infectiologie',     description: 'Maladies infectieuses et parasitaires' },
-    { nom: 'Médecine générale', description: 'Soins primaires et médecine de famille' },
-    { nom: 'Neurologie',        description: 'Maladies du système nerveux central et périphérique' },
-    { nom: 'Ophtalmologie',     description: 'Maladies et chirurgie des yeux' },
-    { nom: 'Orthopédie',        description: 'Maladies et traumatismes de l\'appareil locomoteur' },
-    { nom: 'Pédiatrie',         description: 'Médecine des enfants et des adolescents' },
+    { id: 1,  nom: 'Médecine générale', description: 'Soins primaires et médecine de famille' },
+    { id: 2,  nom: 'Cardiologie',       description: 'Diagnostic et traitement des maladies du cœur et des vaisseaux' },
+    { id: 3,  nom: 'Pédiatrie',         description: 'Médecine dédiée aux nourrissons, enfants et adolescents' },
+    { id: 4,  nom: 'Dermatologie',      description: 'Traitement des affections cutanées, dermatoses et allergies' },
+    { id: 5,  nom: 'Gynécologie',       description: 'Santé de la femme, suivi gynécologique et obstétrical' },
+    { id: 6,  nom: 'Neurologie',        description: 'Diagnostic et traitement des maladies du système nerveux' },
+    { id: 7,  nom: 'Ophtalmologie',     description: 'Soins et chirurgie des yeux' },
+    { id: 8,  nom: 'Orthopédie',        description: "Traitement des affections de l'appareil locomoteur" },
+    { id: 9,  nom: 'Infectiologie',     description: 'Diagnostic et traitement des maladies infectieuses (paludisme, typhoïde, etc.)' },
+    { id: 10, nom: 'Endocrinologie',    description: 'Maladies hormonales : diabète, thyroïde, etc.' },
   ];
 
-  const specialites: Record<string, { id: number }> = {};
   for (const s of specialitesData) {
-    const result = await prisma.specialite.upsert({
+    await prisma.specialite.upsert({
       where: { nom: s.nom },
       update: {},
-      create: s,
+      create: { nom: s.nom, description: s.description },
     });
-    specialites[s.nom] = result;
   }
-  console.log('✔️  Spécialités créées');
+  console.log('✔️  10 spécialités créées');
 
-  // ─── 4. Médecins guinéens ──────────────────────────────────────────────────
+  // ─── 4. Médecins (23 médecins réels de la base locale) ────────────────────
+  // On récupère les IDs réels des centres et spécialités insérés
+  const centres     = await prisma.centre.findMany();
+  const specialites = await prisma.specialite.findMany();
+  const centreByNom     = Object.fromEntries(centres.map(c     => [c.nom, c.id]));
+  const specialiteByNom = Object.fromEntries(specialites.map(s => [s.nom, s.id]));
+
   const medecinsList = [
-    { nom: 'Baldé',     prenom: 'Mamadou',   email: 'mbalde@medirdv.com',   tel: '+224 622 11 22 33', centre: 'Centre Médical de Labé',         spe: 'Médecine générale' },
-    { nom: 'Barry',     prenom: 'Fatoumata', email: 'fbarry@medirdv.com',   tel: '+224 622 33 44 55', centre: 'Centre de Santé de Ratoma',       spe: 'Pédiatrie'         },
-    { nom: 'Camara',    prenom: 'Ibrahima',  email: 'icamara@medirdv.com',  tel: '+224 621 44 55 66', centre: 'Clinique Ambroise Paré Conakry',  spe: 'Cardiologie'       },
-    { nom: 'Diallo',    prenom: 'Aissatou',  email: 'adiallo@medirdv.com',  tel: '+224 620 55 66 77', centre: 'Clinique Pasteur de Conakry',     spe: 'Gynécologie'       },
-    { nom: 'Kouyaté',   prenom: 'Seydou',    email: 'skouyate@medirdv.com', tel: '+224 628 66 77 88', centre: 'Hôpital Ignace Deen',             spe: 'Neurologie'        },
-    { nom: 'Condé',     prenom: 'Mariama',   email: 'mconde@medirdv.com',   tel: '+224 627 77 88 99', centre: 'Hôpital National Donka',          spe: 'Infectiologie'     },
-    { nom: 'Sylla',     prenom: 'Oumar',     email: 'osylla@medirdv.com',   tel: '+224 625 88 99 00', centre: 'Hôpital Préfectoral de Kindia',   spe: 'Orthopédie'        },
-    { nom: 'Tounkara',  prenom: 'Kadiatou',  email: 'ktounkara@medirdv.com',tel: '+224 624 99 00 11', centre: 'Hôpital Régional de Kankan',      spe: 'Dermatologie'      },
-    { nom: 'Soumah',    prenom: 'Thierno',   email: 'tsoumah@medirdv.com',  tel: '+224 623 00 11 22', centre: 'Hôpital National Donka',          spe: 'Ophtalmologie'     },
-    { nom: 'Diakité',   prenom: 'Hawa',      email: 'hdiakite@medirdv.com', tel: '+224 622 11 33 44', centre: 'Clinique Ambroise Paré Conakry',  spe: 'Endocrinologie'    },
+    { nom: 'Diallo',     prenom: 'Mamadou',   email: 'dr.mamadou.diallo@donka.gn',       tel: '+224 621 10 11 12', centre: 'Hôpital National Donka',        spe: 'Médecine générale' },
+    { nom: 'Kouyaté',   prenom: 'Sékou',     email: 'dr.sekou.kouyate@donka.gn',        tel: '+224 621 10 13 14', centre: 'Hôpital National Donka',        spe: 'Cardiologie'       },
+    { nom: 'Bah',        prenom: 'Kadiatou',  email: 'dr.kadiatou.bah@donka.gn',         tel: '+224 621 10 15 16', centre: 'Hôpital National Donka',        spe: 'Gynécologie'       },
+    { nom: 'Condé',      prenom: 'Alpha',     email: 'dr.alpha.conde@donka.gn',          tel: '+224 621 10 17 18', centre: 'Hôpital National Donka',        spe: 'Infectiologie'     },
+    { nom: 'Touré',      prenom: 'Fatoumata', email: 'dr.fatoumata.toure@igdeen.gn',     tel: '+224 622 20 11 12', centre: 'Hôpital Ignace Deen',           spe: 'Pédiatrie'         },
+    { nom: 'Sylla',      prenom: 'Oumar',     email: 'dr.oumar.sylla@igdeen.gn',         tel: '+224 622 20 13 14', centre: 'Hôpital Ignace Deen',           spe: 'Neurologie'        },
+    { nom: 'Barry',      prenom: 'Aissatou',  email: 'dr.aissatou.barry@igdeen.gn',      tel: '+224 622 20 15 16', centre: 'Hôpital Ignace Deen',           spe: 'Dermatologie'      },
+    { nom: 'Camara',     prenom: 'Aboubacar', email: 'dr.aboubacar.camara@igdeen.gn',    tel: '+224 622 20 17 18', centre: 'Hôpital Ignace Deen',           spe: 'Orthopédie'        },
+    { nom: 'Keïta',      prenom: 'Mariama',   email: 'dr.mariama.keita@pasteur.gn',      tel: '+224 628 30 11 12', centre: 'Clinique Pasteur de Conakry',   spe: 'Médecine générale' },
+    { nom: 'Soumah',     prenom: 'Thierno',   email: 'dr.thierno.soumah@pasteur.gn',     tel: '+224 628 30 13 14', centre: 'Clinique Pasteur de Conakry',   spe: 'Cardiologie'       },
+    { nom: 'Bangoura',   prenom: 'Hawa',      email: 'dr.hawa.bangoura@pasteur.gn',      tel: '+224 628 30 15 16', centre: 'Clinique Pasteur de Conakry',   spe: 'Ophtalmologie'     },
+    { nom: 'Traoré',     prenom: 'Lansana',   email: 'dr.lansana.traore@pasteur.gn',     tel: '+224 628 30 17 18', centre: 'Clinique Pasteur de Conakry',   spe: 'Endocrinologie'    },
+    { nom: 'Konaté',     prenom: 'Aminata',   email: 'dr.aminata.konate@ratoma.gn',      tel: '+224 624 40 11 12', centre: 'Centre de Santé de Ratoma',     spe: 'Médecine générale' },
+    { nom: 'Baldé',      prenom: 'Ibrahima',  email: 'dr.ibrahima.balde@ratoma.gn',      tel: '+224 624 40 13 14', centre: 'Centre de Santé de Ratoma',     spe: 'Pédiatrie'         },
+    { nom: 'Sow',        prenom: 'Nènè',      email: 'dr.nene.sow@ratoma.gn',            tel: '+224 624 40 15 16', centre: 'Centre de Santé de Ratoma',     spe: 'Gynécologie'       },
+    { nom: 'Guilavogui', prenom: 'Fodé',      email: 'dr.fode.guilavogui@kindia.gn',     tel: '+224 621 50 11 12', centre: 'Hôpital Préfectoral de Kindia', spe: 'Médecine générale' },
+    { nom: 'Millimono',  prenom: 'Safiatou',  email: 'dr.safiatou.millimono@kindia.gn',  tel: '+224 621 50 13 14', centre: 'Hôpital Préfectoral de Kindia', spe: 'Infectiologie'     },
+    { nom: 'Diallo',     prenom: 'Boubacar',  email: 'dr.boubacar.diallo@labe.gn',       tel: '+224 625 60 11 12', centre: 'Centre Médical de Labé',        spe: 'Médecine générale' },
+    { nom: 'Bah',        prenom: 'Aminata',   email: 'dr.aminata.bah@labe.gn',           tel: '+224 625 60 13 14', centre: 'Centre Médical de Labé',        spe: 'Pédiatrie'         },
+    { nom: 'Camara',     prenom: 'Elhadj',    email: 'dr.elhadj.camara@kankan.gn',       tel: '+224 623 70 11 12', centre: 'Hôpital Régional de Kankan',    spe: 'Cardiologie'       },
+    { nom: 'Kouyaté',   prenom: 'Hadja',     email: 'dr.hadja.kouyate@kankan.gn',       tel: '+224 623 70 13 14', centre: 'Hôpital Régional de Kankan',    spe: 'Infectiologie'     },
+    { nom: 'Touré',      prenom: 'Mory',      email: 'dr.mory.toure@ambpare.gn',         tel: '+224 620 80 11 12', centre: 'Clinique Ambroise Paré Conakry',spe: 'Dermatologie'      },
+    { nom: 'Diallo',     prenom: 'Binta',     email: 'dr.binta.diallo@ambpare.gn',       tel: '+224 620 80 13 14', centre: 'Clinique Ambroise Paré Conakry',spe: 'Neurologie'        },
   ];
 
   for (const m of medecinsList) {
@@ -105,15 +108,15 @@ async function main() {
         prenom: m.prenom,
         email: m.email,
         telephone: m.tel,
-        centreId: centres[m.centre].id,
-        specialiteId: specialites[m.spe].id,
+        centreId: centreByNom[m.centre],
+        specialiteId: specialiteByNom[m.spe],
       },
     });
   }
-  console.log('✔️  Médecins créés');
+  console.log('✔️  23 médecins créés');
 
   console.log('');
-  console.log('✅ Base de données guinéenne initialisée avec succès !');
+  console.log('✅ Base de données guinéenne synchronisée avec succès !');
   console.log('   Admin   : admin@medirdv.com   / admin123');
   console.log('   Patient : patient@medirdv.com / patient123');
 }
